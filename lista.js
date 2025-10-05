@@ -1,4 +1,4 @@
-const API_URL = 'https://meteorfall.onrender.com/api/asteroids';
+const API_URL = '/api/asteroids';
 
 let allAsteroids = [];
 
