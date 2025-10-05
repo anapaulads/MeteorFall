@@ -1,0 +1,2 @@
+# Meteofail
+MeteorFall Simule o impacto de um meteoro na Terra! Com o MeteorFall, você escolhe o local em um globo e o tipo de meteoro. Inicie a simulação e descubra a energia liberada, o tamanho da cratera , danos causados e magnitude sísmica do evento.
