@@ -138,8 +138,7 @@ async function reverseGeocode(lat, lon) {
 
 async function preloadAssets() {
     try {
-        await Cesium.Model.fromURI({ url: '/static/assets/meteor.glb' });
-        console.log("Modelo 3D pré-carregado.");
+        await Cesium.Model.fromGltf({ url: '/static/assets/meteor.glb' });        console.log("Modelo 3D pré-carregado.");
     } catch (error) {
         console.error("Falha ao pré-carregar o modelo do meteoro:", error);
     }
