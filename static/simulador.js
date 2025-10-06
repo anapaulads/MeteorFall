@@ -133,7 +133,6 @@ async function preloadAssets() {
     return Promise.resolve();
 }
 
-// Lógica de animação original, com o caminho do modelo corrigido.
 async function animate3DImpact(viewer, impactLocation) {
     if (impactMarkerEntity) {
         viewer.entities.remove(impactMarkerEntity);
@@ -142,17 +141,16 @@ async function animate3DImpact(viewer, impactLocation) {
 
     const fallDurationSeconds = 4.0;
     const startHeight = 400000.0;
-
     const startPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, startHeight);
     const impactPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, 0);
 
-    // Define o relógio da simulação para controlar a animação
     const startTime = Cesium.JulianDate.now();
     const impactTime = Cesium.JulianDate.addSeconds(startTime, fallDurationSeconds, new Cesium.JulianDate());
     viewer.clock.startTime = startTime.clone();
     viewer.clock.stopTime = impactTime.clone();
     viewer.clock.currentTime = startTime.clone();
-    viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+    // CORREÇÃO CRÍTICA AQUI: Impede o loop infinito
+    viewer.clock.clockRange = Cesium.ClockRange.CLAMPED; 
     viewer.clock.multiplier = 1.0;
 
     const positionProperty = new Cesium.SampledPositionProperty();
@@ -169,31 +167,31 @@ async function animate3DImpact(viewer, impactLocation) {
         },
     });
 
-    // A câmera voa para uma posição de observação e fica lá
-    viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon + 0.5, impactLocation.lat - 0.5, startHeight / 5),
-        orientation: {
-            heading: Cesium.Math.toRadians(-45.0),
-            pitch: Cesium.Math.toRadians(-25.0),
-            roll: 0
-        },
-        duration: 2.5
-    });
+    // CORREÇÃO DA CÂMERA: Faz a câmera seguir o meteoro
+    viewer.trackedEntity = meteorEntity;
 
     // Espera a animação terminar
     await new Promise(resolve => {
         const listener = () => {
             if (Cesium.JulianDate.greaterThanOrEquals(viewer.clock.currentTime, viewer.clock.stopTime)) {
                 viewer.clock.onTick.removeEventListener(listener);
-                viewer.entities.remove(meteorEntity); // Remove o meteoro no final
                 resolve();
             }
         };
         viewer.clock.onTick.addEventListener(listener);
-        viewer.clock.shouldAnimate = true; // Garante que o relógio está rodando
+        viewer.clock.shouldAnimate = true;
+    });
+
+    // Limpeza após a animação
+    if (meteorEntity) {
+        viewer.entities.remove(meteorEntity);
+    }
+    viewer.trackedEntity = undefined;
+    viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, 50000),
+        duration: 1
     });
 }
-
 function drawCrater(viewer, impactLocation, craterDiameterKm) {
     if (craterEntities.length > 0) {
         craterEntities.forEach(e => viewer.entities.remove(e));
