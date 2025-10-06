@@ -1,5 +1,4 @@
-import * as Cesium from 'cesium';
-import "cesium/Build/Cesium/Widgets/widgets.css";
+
 
 
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlN2RlMmFiYy1hZjVjLTQwMmYtOWZiMi1iZTk4YTIyNzgyYWQiLCJpZCI6MzQ3MjA0LCJpYXQiOjE3NTk1OTY4MjB9.sCDd-ceVGjbTX6xewjA1Pw2eArR_pXSkA';
