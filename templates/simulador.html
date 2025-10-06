@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simulador de Impacto - CesiumJS</title>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQ4WoMTxYQOMznMsR3o9Y2w9ia9hBmRTE&libraries=places" async defer></script>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div id="app-container">
@@ -86,6 +86,6 @@
             <button id="reset-button">Nova Simulação</button>
         </div>
     </div>
-    <script type="module" src="/static/simulador.js"></script>
+    <script type="module" src="{{ url_for('static', filename='simulador.js') }}"></script>
 </body>
 </html>

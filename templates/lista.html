@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Asteroides Próximos - MeteorFall</title>
-    <link rel="stylesheet" href="/static/pages.css">
-    <link rel="stylesheet" href="/static/estilo.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
 </head>
 <body>
 
@@ -20,10 +20,10 @@
             <img src="https://i.ibb.co/DD44gj6k/Chat-GPT-Image-4-de-out-de-2025-23-47-33.png" alt="MeteorFall Logo">
         </div>
         <nav class="main-nav">
-            <a href="index.html">Home</a>
-            <a href="projeto.html">Projeto</a>
-            <a href="historias.html">Histórias</a>
-            <a href="sobre-nos.html">Sobre Nós</a>
+            <a href="/">Home</a>
+            <a href="/projeto">Projeto</a>
+            <a href="/historias">Histórias</a>
+            <a href="/sobre-nos">Sobre Nós</a>
         </nav>
     </header>
 
@@ -43,6 +43,6 @@
         </div>
     </main>
 
-    <script type="module" src="/static/lista.js"></script>
+    <script type="module" src="{{ url_for('static', filename='lista.js') }}"></script>
 </body>
 </html>
