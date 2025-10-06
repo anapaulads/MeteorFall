@@ -155,7 +155,7 @@ async function animate3DImpact(viewer, impactLocation) {
 
     const meteorEntity = viewer.entities.add({
         position: startPosition,
-        model: { uri: 'assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
+        model: { uri: '/static/assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
     });
 
     viewer.camera.flyTo({
@@ -250,7 +250,7 @@ async function runFullSimulation() {
     resultsPanel.classList.remove('hidden');
     resultsPanel.querySelector('h2').textContent = "Calculando Impacto...";
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/calculate_impact', {
+        const response = await fetch('/api/calculate_impact', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ size: simulationState.selectedMeteor.size, velocity: simulationState.selectedMeteor.velocity, elevation: simulationState.impactLocation.elevation })
