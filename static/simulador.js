@@ -29,13 +29,7 @@ async function main() {
         timeline: false, navigationHelpButton: false, shouldAnimate: true
     });
     
-    updateMeteorUI();
-
-    try {
-        const google3DTileset = await Cesium.createGooglePhotorealistic3DTileset({ key: GOOGLE_API_KEY });
-        viewer.scene.primitives.add(google3DTileset);
-    } catch (error) { console.error(`Falha ao carregar tiles: ${error}`); }
-    
+    updateMeteorUI(); 
     setupEventHandlers();
     initializeGooglePlaces();
 }
