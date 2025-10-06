@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import requests
 from datetime import date, timedelta
@@ -125,5 +125,13 @@ def calculate_impact_endpoint():
     }
     return jsonify(result)
 
+@app.route('/')
+def serve_index():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static_files(path):
+    return send_from_directory('.', path)
+    
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
