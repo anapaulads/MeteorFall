@@ -31,7 +31,7 @@ async function main() {
     updateMeteorUI();
 
     try {
-        const google3DTileset = await Cesium.createGooglePhotorealistic3DTileset({ key: GOOGLE_API_KEY });
+        const google3DTileset = await Cesium.createGooglePhotorealistic3DTileset(GOOGLE_API_KEY);
         viewer.scene.primitives.add(google3DTileset);
     } catch (error) { console.error(`Falha ao carregar tiles: ${error}`); }
     
@@ -98,17 +98,20 @@ function cancelAndReselect() {
 function initializeGooglePlaces() {
     const searchInput = document.getElementById('location-search-input');
     if (window.google && window.google.maps) {
-        const autocomplete = new google.maps.places.Autocomplete(searchInput);
-        autocomplete.addListener('place_changed', () => {
-            const place = autocomplete.getPlace();
-            if (place.geometry && place.geometry.location) {
-                syncUIToLocation(place.geometry.location.lat(), place.geometry.location.lng(), 1, place.formatted_address);
-            }
+        const autocomplete = new google.maps.places.PlaceAutocompleteElement({
+      inputElement: searchInput
         });
-    } else {
-        setTimeout(() => initializeGooglePlaces(), 500);
+        autocomplete.addEventListener("gmp-placeselect", (event) => {
+    const place = event.place;
+    if (place && place.location) {
+        syncUIToLocation(
+            place.location.lat(),
+            place.location.lng(),
+            1,
+            place.displayName || place.formattedAddress
+        );
     }
-}
+});
 
 async function syncUIToLocation(lat, lon, elevation, name = null) {
     const locationDataEl = document.querySelector('#location-data span');
@@ -138,8 +141,8 @@ async function reverseGeocode(lat, lon) {
 
 async function preloadAssets() {
     try {
-        await Cesium.Model.fromGltf({
-            url: "/meteor.glb" // coloque o arquivo em /public/meteor.glb
+        await Cesium.Model.fromGltfAsync({
+            url: "/meteor.glb"
         });
         console.log("Modelo 3D pré-carregado.");
     } catch (error) {
