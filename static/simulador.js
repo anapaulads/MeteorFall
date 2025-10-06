@@ -137,11 +137,8 @@ async function reverseGeocode(lat, lon) {
 }
 
 async function preloadAssets() {
-    try {
-        await Cesium.Model.fromGltf({ url: '/static/assets/meteor.glb' });        console.log("Modelo 3D pré-carregado.");
-    } catch (error) {
-        console.error("Falha ao pré-carregar o modelo do meteoro:", error);
-    }
+    console.log("Pré-carregamento de assets pulado intencionalmente.");
+    return Promise.resolve();
 }
 
 async function animate3DImpact(viewer, impactLocation) {
