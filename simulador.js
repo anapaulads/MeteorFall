@@ -138,7 +138,7 @@ async function reverseGeocode(lat, lon) {
 
 async function preloadAssets() {
     try {
-        await Cesium.Model.fromURI({ url: 'assets/meteor.glb' });
+        await Cesium.Model.fromURI({ url: 'https://sandcastle.cesium.com/CesiumUnlit/Assets/Models/Sphere.glb' });
         console.log("Modelo 3D pré-carregado.");
     } catch (error) {
         console.error("Falha ao pré-carregar o modelo do meteoro:", error);
@@ -155,7 +155,7 @@ async function animate3DImpact(viewer, impactLocation) {
 
     const meteorEntity = viewer.entities.add({
         position: startPosition,
-        model: { uri: 'assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
+        model: { uri: 'https://sandcastle.cesium.com/CesiumUnlit/Assets/Models/Sphere.glb', minimumPixelSize: 128, maximumScale: 25000 },
     });
 
     viewer.camera.flyTo({
