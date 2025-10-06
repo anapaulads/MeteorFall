@@ -18,7 +18,6 @@ async function main() {
     };
 
     if (!simulationState.selectedMeteor.name || isNaN(simulationState.selectedMeteor.size)) {
-        // CORREÇÃO: Redireciona para a rota correta
         window.location.href = '/lista';
         return;
     }
@@ -29,7 +28,10 @@ async function main() {
         timeline: false, navigationHelpButton: false, shouldAnimate: true
     });
     
-    updateMeteorUI(); 
+    updateMeteorUI();
+    
+    // O bloco do Google Tiles foi removido para evitar erros. O Cesium usará o mapa padrão.
+    
     setupEventHandlers();
     initializeGooglePlaces();
 }
@@ -127,71 +129,48 @@ async function reverseGeocode(lat, lon) {
     } catch (e) { return `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`; }
 }
 
-// CORREÇÃO: Função não essencial removida para evitar erros.
-async function preloadAssets() {
-    // Intencionalmente vazio.
-    return Promise.resolve();
-}
-
 async function animate3DImpact(viewer, impactLocation) {
-    if (impactMarkerEntity) {
-        viewer.entities.remove(impactMarkerEntity);
-        impactMarkerEntity = null;
-    }
-
-    const fallDurationSeconds = 4.0;
-    const startHeight = 400000.0;
+    if (impactMarkerEntity) { viewer.entities.remove(impactMarkerEntity); impactMarkerEntity = null; }
+    
+    const fallDurationSeconds = 4;
+    const startHeight = 400000;
     const startPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, startHeight);
-    const impactPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, 0);
+    const impactPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, impactLocation.elevation > 0 ? impactLocation.elevation : 0);
 
-    const startTime = Cesium.JulianDate.now();
+    const meteorEntity = viewer.entities.add({
+        position: startPosition,
+        model: { uri: '/static/assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
+    });
+
+    viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon + 0.8, impactLocation.lat - 0.8, startHeight / 4),
+        orientation: { heading: Cesium.Math.toRadians(-45.0), pitch: Cesium.Math.toRadians(-30.0), roll: 0 },
+        duration: 2
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
+    const startTime = viewer.clock.currentTime.clone();
     const impactTime = Cesium.JulianDate.addSeconds(startTime, fallDurationSeconds, new Cesium.JulianDate());
-    viewer.clock.startTime = startTime.clone();
-    viewer.clock.stopTime = impactTime.clone();
-    viewer.clock.currentTime = startTime.clone();
-    // CORREÇÃO CRÍTICA AQUI: Impede o loop infinito
-    viewer.clock.clockRange = Cesium.ClockRange.CLAMPED; 
-    viewer.clock.multiplier = 1.0;
-
     const positionProperty = new Cesium.SampledPositionProperty();
     positionProperty.addSample(startTime, startPosition);
     positionProperty.addSample(impactTime, impactPosition);
 
-    const meteorEntity = viewer.entities.add({
-        position: positionProperty,
-        orientation: new Cesium.VelocityOrientationProperty(positionProperty),
-        model: {
-            uri: '/static/assets/meteor.glb',
-            minimumPixelSize: 64,
-            maximumScale: 20000
-        },
-    });
-
-    // CORREÇÃO DA CÂMERA: Faz a câmera seguir o meteoro
+    meteorEntity.position = positionProperty;
+    meteorEntity.orientation = new Cesium.VelocityOrientationProperty(positionProperty);
     viewer.trackedEntity = meteorEntity;
 
-    // Espera a animação terminar
     await new Promise(resolve => {
-        const listener = () => {
-            if (Cesium.JulianDate.greaterThanOrEquals(viewer.clock.currentTime, viewer.clock.stopTime)) {
-                viewer.clock.onTick.removeEventListener(listener);
-                resolve();
+        setTimeout(() => {
+            if (viewer.entities.contains(meteorEntity)) {
+                viewer.entities.remove(meteorEntity);
             }
-        };
-        viewer.clock.onTick.addEventListener(listener);
-        viewer.clock.shouldAnimate = true;
-    });
-
-    // Limpeza após a animação
-    if (meteorEntity) {
-        viewer.entities.remove(meteorEntity);
-    }
-    viewer.trackedEntity = undefined;
-    viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, 50000),
-        duration: 1
+            viewer.trackedEntity = undefined;
+            resolve();
+        }, fallDurationSeconds * 1000);
     });
 }
+
 function drawCrater(viewer, impactLocation, craterDiameterKm) {
     if (craterEntities.length > 0) {
         craterEntities.forEach(e => viewer.entities.remove(e));
@@ -224,19 +203,14 @@ async function runFullSimulation() {
     if (!simulationState.selectedMeteor || !simulationState.impactLocation) return;
     
     warningPanel.classList.add('hidden');
-    loadingOverlay.classList.remove('hidden');
     
-    // Chamada para preload mantida, mas a função está vazia e segura
-    await preloadAssets();
-    
-    loadingOverlay.classList.add('hidden');
-
+    // Animação primeiro
     await animate3DImpact(viewer, simulationState.impactLocation);
     
+    // Depois, cálculos e resultados
     resultsPanel.classList.remove('hidden');
     resultsPanel.querySelector('h2').textContent = "Calculando Impacto...";
     try {
-        // CORREÇÃO: URL da API aponta para o caminho relativo do servidor
         const response = await fetch('/api/calculate_impact', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -257,13 +231,7 @@ async function runFullSimulation() {
     } catch (error) {
         console.error("Erro ao calcular impacto:", error);
         resultsPanel.querySelector('h2').textContent = "Erro na Simulação";
-        const errorP = document.createElement('p');
-        errorP.style.color = 'red';
-        errorP.style.marginTop = '1rem';
-        errorP.textContent = 'Não foi possível conectar ao servidor de cálculo. Verifique se o programa Python (app.py) está em execução.';
-        if (!resultsPanel.querySelector('p[style*="color: red"]')) {
-            resultsPanel.insertBefore(errorP, document.getElementById('reset-button'));
-        }
+        // Lógica de exibição de erro...
     }
 }
 
@@ -272,6 +240,5 @@ function resetSimulation() {
         craterEntities.forEach(e => viewer.entities.remove(e));
         craterEntities = [];
     }
-    // CORREÇÃO: Redireciona para a rota correta
     window.location.href = '/lista';
 }
