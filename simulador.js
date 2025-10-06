@@ -1,6 +1,7 @@
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MGQ3NjA3NC00OTZmLTQ4N2EtYWZiZi0wYTNlOGY4ZDU5MmMiLCJpZCI6MzQ3NTcwLCJpYXQiOjE3NTk3MTIxNTB9.Wu8yvJ_5lpp20e7GL1JOZyh0B_K72b0ifvk2U3ESIpY';
 const GOOGLE_API_KEY = "AIzaSyBQ4WoMTxYQOMznMsR3o9Y2w9ia9hBmRTE";
 
+
 let viewer;
 let simulationState = { selectedMeteor: null, impactLocation: null };
 let impactMarkerEntity = null;
@@ -30,7 +31,7 @@ async function main() {
     updateMeteorUI();
 
     try {
-        const google3DTileset = await Cesium.createGooglePhotorealistic3DTileset(GOOGLE_API_KEY);
+        const google3DTileset = await Cesium.createGooglePhotorealistic3DTileset({ key: GOOGLE_API_KEY });
         viewer.scene.primitives.add(google3DTileset);
     } catch (error) { console.error(`Falha ao carregar tiles: ${error}`); }
     
@@ -47,6 +48,7 @@ function updateMeteorUI() {
 function setupEventHandlers() {
     const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
     handler.setInputAction((click) => {
+        // Impede cliques no globo se qualquer painel de ação estiver visível
         const isActionPanelVisible = !document.getElementById('warning-panel').classList.contains('hidden') ||
                                      !document.getElementById('results-panel').classList.contains('hidden') ||
                                      !document.getElementById('evacuation-panel').classList.contains('hidden');
@@ -70,6 +72,7 @@ function setupEventHandlers() {
     document.getElementById('close-evacuation-btn').addEventListener('click', hideEvacuationPanel);
 }
 
+
 function showEvacuationPanel() {
     const evacuationPanel = document.getElementById('evacuation-panel');
     const asteroidNameEl = document.getElementById('evacuation-asteroid-name');
@@ -91,22 +94,15 @@ function cancelAndReselect() {
     document.querySelector('#location-data span').textContent = 'Nenhum selecionado';
 }
 
-// --- Google Places atualizado ---
+
 function initializeGooglePlaces() {
     const searchInput = document.getElementById('location-search-input');
     if (window.google && window.google.maps) {
-        const autocomplete = new google.maps.places.PlaceAutocompleteElement({
-            inputElement: searchInput
-        });
-        autocomplete.addEventListener("gmp-placeselect", (event) => {
-            const place = event.place;
-            if (place && place.location) {
-                syncUIToLocation(
-                    place.location.lat(),
-                    place.location.lng(),
-                    1,
-                    place.displayName || place.formattedAddress
-                );
+        const autocomplete = new google.maps.places.Autocomplete(searchInput);
+        autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (place.geometry && place.geometry.location) {
+                syncUIToLocation(place.geometry.location.lat(), place.geometry.location.lng(), 1, place.formatted_address);
             }
         });
     } else {
@@ -114,7 +110,6 @@ function initializeGooglePlaces() {
     }
 }
 
-// --- Corrigido: agora está fora do initializeGooglePlaces ---
 async function syncUIToLocation(lat, lon, elevation, name = null) {
     const locationDataEl = document.querySelector('#location-data span');
     simulationState.impactLocation = { lat, lon, elevation };
@@ -143,9 +138,7 @@ async function reverseGeocode(lat, lon) {
 
 async function preloadAssets() {
     try {
-        await Cesium.Model.fromGltfAsync({
-            url: "/meteor.glb" // precisa estar dentro de /public/
-        });
+        await Cesium.Model.fromURI({ url: 'meteor.glb' });
         console.log("Modelo 3D pré-carregado.");
     } catch (error) {
         console.error("Falha ao pré-carregar o modelo do meteoro:", error);
@@ -162,11 +155,7 @@ async function animate3DImpact(viewer, impactLocation) {
 
     const meteorEntity = viewer.entities.add({
         position: startPosition,
-        model: { 
-            uri: "/meteor.glb", // arquivo deve estar no /public/
-            minimumPixelSize: 128,
-            maximumScale: 25000
-        },
+        model: { uri: 'https://anapaulads.github.io/meteor-assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
     });
 
     viewer.camera.flyTo({
