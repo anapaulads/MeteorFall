@@ -21,7 +21,7 @@ function renderAsteroids(asteroidsToRender) {
             size: asteroid.size_meters,
             velocity: asteroid.velocity_km_s
         });
-        cardLink.href = `simulador.html?${params.toString()}`;
+cardLink.href = `/simulador?${params.toString()}`;
 
         cardLink.innerHTML = `
             <article class="asteroid-card ${asteroid.hazard_level.class}">
