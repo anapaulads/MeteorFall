@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import requests
 from datetime import date, timedelta
@@ -101,6 +101,14 @@ def get_weekly_asteroids():
         return None 
 
 # --- ENDPOINTS DA API ---
+
+
+
+@app.route('/')
+def home():
+    """Serve a página principal do frontend."""
+    return render_template('index.html')
+
 @app.route('/api/asteroids')
 def asteroids_endpoint():
     return jsonify(get_weekly_asteroids())
