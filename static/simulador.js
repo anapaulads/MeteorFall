@@ -142,36 +142,45 @@ async function preloadAssets() {
 }
 
 async function animate3DImpact(viewer, impactLocation) {
-    console.log("1. INICIANDO A FUNÇÃO DE ANIMAÇÃO (animate3DImpact).");
+    if (impactMarkerEntity) {
+        viewer.entities.remove(impactMarkerEntity);
+        impactMarkerEntity = null;
+    }
 
-    if (impactMarkerEntity) { viewer.entities.remove(impactMarkerEntity); impactMarkerEntity = null; }
-    
     const fallDurationSeconds = 4;
     const startHeight = 400000;
     const startPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, startHeight);
     const impactPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, impactLocation.elevation > 0 ? impactLocation.elevation : 0);
 
-    console.log("2. Criando a entidade do meteoro no ponto inicial.");
-    const meteorEntity = viewer.entities.add({
-        position: startPosition,
-        model: { 
-            uri: '/static/assets/meteor.glb', 
-            minimumPixelSize: 128, 
-            maximumScale: 25000 
-        },
-    });
+    let meteorEntity;
+    try {
+        meteorEntity = viewer.entities.add({
+            position: startPosition,
+            model: {
+                uri: '/static/assets/meteor.glb',
+                minimumPixelSize: 64, // Reduzido para teste
+                maximumScale: 20000,
+            },
+        });
+        console.log("Entidade do meteoro criada com sucesso.");
+    } catch (error) {
+        console.error("Falha ao criar a entidade do meteoro:", error);
+        return; // Sai da função se não conseguir criar o modelo
+    }
 
-    console.log("3. Dando comando para a câmera voar para a posição (flyTo).");
     viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon + 0.8, impactLocation.lat - 0.8, startHeight / 4),
-        orientation: { heading: Cesium.Math.toRadians(-45.0), pitch: Cesium.Math.toRadians(-30.0), roll: 0 },
+        destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon + 0.5, impactLocation.lat - 0.5, startHeight / 5),
+        orientation: {
+            heading: Cesium.Math.toRadians(-45.0),
+            pitch: Cesium.Math.toRadians(-25.0),
+            roll: 0
+        },
         duration: 2
     });
 
-    console.log("4. Aguardando 2.5 segundos para a câmera chegar...");
+    // Pausa para a câmera chegar na posição
     await new Promise(resolve => setTimeout(resolve, 2500));
 
-    console.log("5. Configurando a trajetória de queda do meteoro.");
     const startTime = viewer.clock.currentTime.clone();
     const impactTime = Cesium.JulianDate.addSeconds(startTime, fallDurationSeconds, new Cesium.JulianDate());
     const positionProperty = new Cesium.SampledPositionProperty();
@@ -180,20 +189,28 @@ async function animate3DImpact(viewer, impactLocation) {
 
     meteorEntity.position = positionProperty;
     meteorEntity.orientation = new Cesium.VelocityOrientationProperty(positionProperty);
-    
-    console.log("6. Ativando o rastreamento da câmera no meteoro.");
     viewer.trackedEntity = meteorEntity;
 
-    console.log(`7. Aguardando a animação de ${fallDurationSeconds} segundos terminar...`);
+    // Pausa para a animação acontecer
     await new Promise(resolve => {
-        setTimeout(() => {
-            console.log("8. Animação terminada. Removendo o meteoro da tela.");
-            viewer.entities.remove(meteorEntity);
-            viewer.trackedEntity = undefined;
-            resolve();
-        }, fallDurationSeconds * 1000);
+        const listener = () => {
+            if (Cesium.JulianDate.greaterThanOrEquals(viewer.clock.currentTime, impactTime)) {
+                viewer.clock.onTick.removeEventListener(listener);
+                resolve();
+            }
+        };
+        viewer.clock.onTick.addEventListener(listener);
     });
-    console.log("9. FIM DA FUNÇÃO DE ANIMAÇÃO.");
+
+    // Limpeza após a animação
+    if (meteorEntity) {
+        viewer.entities.remove(meteorEntity);
+    }
+    viewer.trackedEntity = undefined;
+    viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, 50000), // Zoom out to see the crater
+        duration: 1
+    });
 }
 
 function drawCrater(viewer, impactLocation, craterDiameterKm) {
@@ -245,20 +262,21 @@ function drawCrater(viewer, impactLocation, craterDiameterKm) {
 async function runFullSimulation() {
     const warningPanel = document.getElementById('warning-panel');
     const resultsPanel = document.getElementById('results-panel');
-    const loadingOverlay = document.getElementById('loading-overlay');
     
     if (!simulationState.selectedMeteor || !simulationState.impactLocation) return;
     
     warningPanel.classList.add('hidden');
-    loadingOverlay.classList.remove('hidden');
-    
-    await preloadAssets();
-    
-    loadingOverlay.classList.add('hidden');
+    resultsPanel.classList.remove('hidden'); // Mostra o painel imediatamente
+    resultsPanel.querySelector('h2').textContent = "Simulando Animação...";
 
-    await animate3DImpact(viewer, simulationState.impactLocation);
+    // A função de animação agora tem um try-catch para nos dizer se algo falhar
+    try {
+        await animate3DImpact(viewer, simulationState.impactLocation);
+    } catch (error) {
+        console.error("ERRO CRÍTICO DURANTE A ANIMAÇÃO:", error);
+        // Mesmo se a animação falhar, continuamos para os cálculos
+    }
     
-    resultsPanel.classList.remove('hidden');
     resultsPanel.querySelector('h2').textContent = "Calculando Impacto...";
     try {
         const response = await fetch('/api/calculate_impact', {
@@ -290,7 +308,6 @@ async function runFullSimulation() {
         }
     }
 }
-
 function resetSimulation() {
     if (craterEntities.length > 0) {
         craterEntities.forEach(e => viewer.entities.remove(e));
