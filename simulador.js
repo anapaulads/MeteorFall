@@ -138,7 +138,9 @@ async function reverseGeocode(lat, lon) {
 
 async function preloadAssets() {
     try {
-        await Cesium.Model.fromURI({ url: 'https://anapaulads.github.io/meteor-assets/meteor.glb' });
+        await Cesium.Model.fromGltf({
+            url: "/meteor.glb" // coloque o arquivo em /public/meteor.glb
+        });
         console.log("Modelo 3D pré-carregado.");
     } catch (error) {
         console.error("Falha ao pré-carregar o modelo do meteoro:", error);
@@ -154,9 +156,13 @@ async function animate3DImpact(viewer, impactLocation) {
     const impactPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, impactLocation.elevation > 0 ? impactLocation.elevation : 0);
 
     const meteorEntity = viewer.entities.add({
-        position: startPosition,
-        model: { uri: 'https://anapaulads.github.io/meteor-assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
-    });
+    position: startPosition,
+    model: { 
+        uri: "/meteor.glb", // o arquivo dentro de /public/
+        minimumPixelSize: 128,
+        maximumScale: 25000
+    },
+});
 
     viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon + 0.8, impactLocation.lat - 0.8, startHeight / 4),
