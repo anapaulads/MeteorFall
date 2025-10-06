@@ -142,6 +142,8 @@ async function preloadAssets() {
 }
 
 async function animate3DImpact(viewer, impactLocation) {
+    console.log("1. INICIANDO A FUNÇÃO DE ANIMAÇÃO (animate3DImpact).");
+
     if (impactMarkerEntity) { viewer.entities.remove(impactMarkerEntity); impactMarkerEntity = null; }
     
     const fallDurationSeconds = 4;
@@ -149,19 +151,27 @@ async function animate3DImpact(viewer, impactLocation) {
     const startPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, startHeight);
     const impactPosition = Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat, impactLocation.elevation > 0 ? impactLocation.elevation : 0);
 
+    console.log("2. Criando a entidade do meteoro no ponto inicial.");
     const meteorEntity = viewer.entities.add({
         position: startPosition,
-        model: { uri: '/static/assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
+        model: { 
+            uri: '/static/assets/meteor.glb', 
+            minimumPixelSize: 128, 
+            maximumScale: 25000 
+        },
     });
 
+    console.log("3. Dando comando para a câmera voar para a posição (flyTo).");
     viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(impactLocation.lon + 0.8, impactLocation.lat - 0.8, startHeight / 4),
         orientation: { heading: Cesium.Math.toRadians(-45.0), pitch: Cesium.Math.toRadians(-30.0), roll: 0 },
         duration: 2
     });
 
+    console.log("4. Aguardando 2.5 segundos para a câmera chegar...");
     await new Promise(resolve => setTimeout(resolve, 2500));
 
+    console.log("5. Configurando a trajetória de queda do meteoro.");
     const startTime = viewer.clock.currentTime.clone();
     const impactTime = Cesium.JulianDate.addSeconds(startTime, fallDurationSeconds, new Cesium.JulianDate());
     const positionProperty = new Cesium.SampledPositionProperty();
@@ -170,15 +180,20 @@ async function animate3DImpact(viewer, impactLocation) {
 
     meteorEntity.position = positionProperty;
     meteorEntity.orientation = new Cesium.VelocityOrientationProperty(positionProperty);
+    
+    console.log("6. Ativando o rastreamento da câmera no meteoro.");
     viewer.trackedEntity = meteorEntity;
 
+    console.log(`7. Aguardando a animação de ${fallDurationSeconds} segundos terminar...`);
     await new Promise(resolve => {
         setTimeout(() => {
+            console.log("8. Animação terminada. Removendo o meteoro da tela.");
             viewer.entities.remove(meteorEntity);
             viewer.trackedEntity = undefined;
             resolve();
         }, fallDurationSeconds * 1000);
     });
+    console.log("9. FIM DA FUNÇÃO DE ANIMAÇÃO.");
 }
 
 function drawCrater(viewer, impactLocation, craterDiameterKm) {
