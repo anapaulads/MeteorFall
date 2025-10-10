@@ -1,17 +1,15 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import requests
 from datetime import date, timedelta
 import os
 import math
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-NASA_API_KEY = os.getenv("NASA_API_KEY")
+
+NASA_API_KEY = "9b1BMDAfJzsYJG6hSsQG4eRly2g3fw35wAVyBpB9"
 
 
 def safe_float(value, default=0.0):
@@ -42,8 +40,7 @@ def calculate_impact_effects(energy_joules: float) -> dict:
     if energy_joules == 0:
         return {"seismic_magnitude_mw": 0, "crater_diameter_km": 0, "hiroshima_bombs": 0, "tsar_bombs": 0}
 
-    seismic_magnitude_mw = (2/3) * math.log10(energy_joules) - \
-        6.0 if energy_joules > 0 else 0
+    seismic_magnitude_mw = (2/3) * math.log10(energy_joules) - 6.0
     crater_diameter_m = 0.07 * (energy_joules ** (1/3.4))
     hiroshima_equivalency = energy_joules / 6.3e13
     tsar_equivalency = energy_joules / 2.1e17
@@ -68,15 +65,12 @@ def classify_hazard_level(energy_megatons: float) -> dict:
 
 
 def get_weekly_asteroids():
+    """Busca os asteroides da próxima semana e retorna uma lista com classificação de perigo."""
     start_date = date.today()
     end_date = start_date + timedelta(days=7)
     url = "https://api.nasa.gov/neo/rest/v1/feed"
     params = {"start_date": start_date.strftime(
         "%Y-%m-%d"), "end_date": end_date.strftime("%Y-%m-%d"), "api_key": NASA_API_KEY}
-
-    if not NASA_API_KEY:
-        print("Erro: Chave da API da NASA não configurada.")
-        return None
 
     try:
         response = requests.get(url, params=params)
@@ -109,6 +103,66 @@ def get_weekly_asteroids():
     except Exception as e:
         print(f"Um erro ocorreu ao buscar asteroides: {e}")
         return None
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+
+@app.route('/projeto')
+def projeto():
+    return render_template('projeto.html')
+
+
+@app.route('/historias')
+def historias():
+    return render_template('historias.html')
+
+
+@app.route('/sobre-nos')
+def sobre_nos():
+    return render_template('sobre-nos.html')
+
+
+@app.route('/lista')
+def lista():
+    return render_template('lista.html')
+
+
+@app.route('/quiz')
+def quiz():
+    return render_template('quiz.html')
+
+
+@app.route('/simulador')
+def simulador():
+    return render_template('simulador.html')
+
+
+@app.route('/casos-reais')
+def casos_reais():
+    return render_template('casos-reais.html')
+
+
+@app.route('/cenarios-de-impacto')
+def cenarios_de_impacto():
+    return render_template('cenarios-de-impacto.html')
+
+
+@app.route('/consequencias-globais')
+def consequencias_globais():
+    return render_template('consequencias-globais.html')
+
+
+@app.route('/escalas-de-risco')
+def escalas_de_risco():
+    return render_template('escalas-de-risco.html')
+
+
+@app.route('/missao')
+def missao():
+    return render_template('missao.html')
 
 
 @app.route('/api/asteroids')
