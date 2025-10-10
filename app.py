@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from flask import Flask, jsonify, request, send_from_directory
+=======
+from flask import Flask, jsonify, request, render_template
+>>>>>>> colega/main
 from flask_cors import CORS
 import requests
 from datetime import date, timedelta
@@ -11,9 +15,13 @@ CORS(app)
 
 NASA_API_KEY = "9b1BMDAfJzsYJG6hSsQG4eRly2g3fw35wAVyBpB9"
 
+<<<<<<< HEAD
 # --- FUNÇÕES DE FÍSICA E SEGURANÇA ---
 
 
+=======
+# --- FUNÇÕES DE FÍSICA E SEGURANÇA (sem alterações) ---
+>>>>>>> colega/main
 def safe_float(value, default=0.0):
     try:
         return float(value)
@@ -54,9 +62,12 @@ def calculate_impact_effects(energy_joules: float) -> dict:
         "tsar_bombs": round(tsar_equivalency, 2)
     }
 
+<<<<<<< HEAD
 # --- FUNÇÃO DE CLASSIFICAÇÃO DE PERIGO---
 
 
+=======
+>>>>>>> colega/main
 def classify_hazard_level(energy_megatons: float) -> dict:
     if energy_megatons < 1:
         return {"level": "Risco Baixo", "class": "risk-low"}
@@ -67,9 +78,12 @@ def classify_hazard_level(energy_megatons: float) -> dict:
     else:
         return {"level": "Risco Cataclísmico", "class": "risk-cataclysmic"}
 
+<<<<<<< HEAD
 # --- FUNÇÃO get_weekly_asteroids ---
 
 
+=======
+>>>>>>> colega/main
 def get_weekly_asteroids():
     """Busca os asteroides da próxima semana e retorna uma lista com classificação de perigo."""
     start_date = date.today()
@@ -97,29 +111,84 @@ def get_weekly_asteroids():
             velocity_km_s = safe_float(approach_data.get(
                 "relative_velocity", {}).get("kilometers_per_second", 0))
 
-            # Pré-cálculo da energia e do nível de perigo para o filtro
             mass = calculate_asteroid_mass(size_m)
             energy = calculate_kinetic_energy(mass, velocity_km_s)
             hazard_level = classify_hazard_level(energy["megatons_tnt"])
 
             processed_neos.append({
-                "id": neo.get("id"),
-                "name": neo.get("name"),
-                "size_meters": size_m,
-                "velocity_km_s": velocity_km_s,
-                "hazard_level": hazard_level
+                "id": neo.get("id"), "name": neo.get("name"), "size_meters": size_m,
+                "velocity_km_s": velocity_km_s, "hazard_level": hazard_level
             })
         return processed_neos
     except Exception as e:
         print(f"Um erro ocorreu ao buscar asteroides: {e}")
         return None
 
+<<<<<<< HEAD
 # --- ENDPOINTS DA API ---
 
 
+=======
+# --- ROTAS DAS PÁGINAS (FRONTEND) ---
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/projeto')
+def projeto():
+    return render_template('projeto.html')
+
+@app.route('/historias')
+def historias():
+    return render_template('historias.html')
+
+@app.route('/sobre-nos')
+def sobre_nos():
+    return render_template('sobre-nos.html')
+
+@app.route('/lista')
+def lista():
+    return render_template('lista.html')
+
+@app.route('/quiz')
+def quiz():
+    return render_template('quiz.html')
+
+@app.route('/simulador')
+def simulador():
+    return render_template('simulador.html')
+
+@app.route('/casos-reais')
+def casos_reais():
+    return render_template('casos-reais.html')
+
+@app.route('/cenarios-de-impacto')
+def cenarios_de_impacto():
+    return render_template('cenarios-de-impacto.html')
+
+@app.route('/consequencias-globais')
+def consequencias_globais():
+    return render_template('consequencias-globais.html')
+
+@app.route('/escalas-de-risco')
+def escalas_de_risco():
+    return render_template('escalas-de-risco.html')
+    
+@app.route('/missao')
+def missao():
+    return render_template('missao.html')
+
+
+# --- ENDPOINTS DA API (BACKEND) ---
+
+>>>>>>> colega/main
 @app.route('/api/asteroids')
 def asteroids_endpoint():
-    return jsonify(get_weekly_asteroids())
+    asteroids = get_weekly_asteroids()
+    if asteroids is None:
+        return jsonify({"error": "Failed to fetch data from NASA API"}), 500
+    return jsonify(asteroids)
 
 
 @app.route('/api/calculate_impact', methods=['POST'])

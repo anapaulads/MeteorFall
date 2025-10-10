@@ -1,6 +1,10 @@
+<<<<<<< HEAD:simulador.js
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MGQ3NjA3NC00OTZmLTQ4N2EtYWZiZi0wYTNlOGY4ZDU5MmMiLCJpZCI6MzQ3NTcwLCJpYXQiOjE3NTk3MTIxNTB9.Wu8yvJ_5lpp20e7GL1JOZyh0B_K72b0ifvk2U3ESIpY';
-const GOOGLE_API_KEY = "AIzaSyBQ4WoMTxYQOMznMsR3o9Y2w9ia9hBmRTE";
+=======
 
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTQ4YmU0Mi1jNjRiLTRmZTEtOGU5Mi0zOWY5YzFhZTljYTkiLCJpZCI6MzQ3MjAxLCJpYXQiOjE3NTk3MTQ5MTB9.YT6r6H1Fol-tm3ksnj1oWs-IeBf07RyOwbu3LqywhqU'; 
+>>>>>>> colega/main:static/simulador.js
+const GOOGLE_API_KEY = "AIzaSyBQ4WoMTxYQOMznMsR3o9Y2w9ia9hBmRTE";
 
 let viewer;
 let simulationState = { selectedMeteor: null, impactLocation: null };
@@ -17,8 +21,8 @@ async function main() {
         velocity: parseFloat(urlParams.get('velocity'))
     };
 
-    if (!simulationState.selectedMeteor.name) {
-        window.location.href = 'lista.html';
+    if (!simulationState.selectedMeteor.name || isNaN(simulationState.selectedMeteor.size)) {
+        window.location.href = '/lista';
         return;
     }
     
@@ -29,11 +33,8 @@ async function main() {
     });
     
     updateMeteorUI();
-
-    try {
-        const google3DTileset = await Cesium.createGooglePhotorealistic3DTileset({ key: GOOGLE_API_KEY });
-        viewer.scene.primitives.add(google3DTileset);
-    } catch (error) { console.error(`Falha ao carregar tiles: ${error}`); }
+    
+    // O bloco do Google Tiles foi removido para evitar erros. O Cesium usará o mapa padrão.
     
     setupEventHandlers();
     initializeGooglePlaces();
@@ -48,7 +49,6 @@ function updateMeteorUI() {
 function setupEventHandlers() {
     const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
     handler.setInputAction((click) => {
-        // Impede cliques no globo se qualquer painel de ação estiver visível
         const isActionPanelVisible = !document.getElementById('warning-panel').classList.contains('hidden') ||
                                      !document.getElementById('results-panel').classList.contains('hidden') ||
                                      !document.getElementById('evacuation-panel').classList.contains('hidden');
@@ -72,7 +72,6 @@ function setupEventHandlers() {
     document.getElementById('close-evacuation-btn').addEventListener('click', hideEvacuationPanel);
 }
 
-
 function showEvacuationPanel() {
     const evacuationPanel = document.getElementById('evacuation-panel');
     const asteroidNameEl = document.getElementById('evacuation-asteroid-name');
@@ -87,13 +86,11 @@ function hideEvacuationPanel() {
 function cancelAndReselect() {
     document.getElementById('warning-panel').classList.add('hidden');
     document.getElementById('control-panel').classList.remove('hidden');
-
     simulationState.impactLocation = null;
     if (impactMarkerEntity) viewer.entities.remove(impactMarkerEntity);
     impactMarkerEntity = null;
     document.querySelector('#location-data span').textContent = 'Nenhum selecionado';
 }
-
 
 function initializeGooglePlaces() {
     const searchInput = document.getElementById('location-search-input');
@@ -106,7 +103,7 @@ function initializeGooglePlaces() {
             }
         });
     } else {
-        setTimeout(() => initializeGooglePlaces(), 500);
+        setTimeout(initializeGooglePlaces, 500);
     }
 }
 
@@ -136,15 +133,6 @@ async function reverseGeocode(lat, lon) {
     } catch (e) { return `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`; }
 }
 
-async function preloadAssets() {
-    try {
-        await Cesium.Model.fromURI({ url: 'assets/meteor.glb' });
-        console.log("Modelo 3D pré-carregado.");
-    } catch (error) {
-        console.error("Falha ao pré-carregar o modelo do meteoro:", error);
-    }
-}
-
 async function animate3DImpact(viewer, impactLocation) {
     if (impactMarkerEntity) { viewer.entities.remove(impactMarkerEntity); impactMarkerEntity = null; }
     
@@ -155,7 +143,7 @@ async function animate3DImpact(viewer, impactLocation) {
 
     const meteorEntity = viewer.entities.add({
         position: startPosition,
-        model: { uri: 'assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
+        model: { uri: '/static/assets/meteor.glb', minimumPixelSize: 128, maximumScale: 25000 },
     });
 
     viewer.camera.flyTo({
@@ -178,7 +166,9 @@ async function animate3DImpact(viewer, impactLocation) {
 
     await new Promise(resolve => {
         setTimeout(() => {
-            viewer.entities.remove(meteorEntity);
+            if (viewer.entities.contains(meteorEntity)) {
+                viewer.entities.remove(meteorEntity);
+            }
             viewer.trackedEntity = undefined;
             resolve();
         }, fallDurationSeconds * 1000);
@@ -190,44 +180,22 @@ function drawCrater(viewer, impactLocation, craterDiameterKm) {
         craterEntities.forEach(e => viewer.entities.remove(e));
         craterEntities = [];
     }
-
     const finalRadiusMeters = (craterDiameterKm * 1000) / 2;
     if (finalRadiusMeters <= 0) return;
-
     const animationDurationSeconds = 2.5;
     const startTime = viewer.clock.currentTime.clone();
-
     const radiusProperty = new Cesium.CallbackProperty(function(time, result) {
         const elapsedTime = Cesium.JulianDate.secondsDifference(time, startTime);
         const progress = Math.min(elapsedTime / animationDurationSeconds, 1.0);
         return finalRadiusMeters * progress;
     }, false);
-
     craterEntities.push(viewer.entities.add({
         position: Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat),
-        ellipse: {
-            semiMinorAxis: radiusProperty,
-            semiMajorAxis: radiusProperty,
-            material: Cesium.Color.RED.withAlpha(0.4),
-            clampToGround: true 
-        }
+        ellipse: { semiMinorAxis: radiusProperty, semiMajorAxis: radiusProperty, material: Cesium.Color.RED.withAlpha(0.4), clampToGround: true }
     }));
-
     craterEntities.push(viewer.entities.add({
         position: Cesium.Cartesian3.fromDegrees(impactLocation.lon, impactLocation.lat),
-        ellipse: {
-            semiMinorAxis: radiusProperty,
-            semiMajorAxis: radiusProperty,
-            material: new Cesium.PolylineGlowMaterialProperty({
-                glowPower: 0.25,
-                color: Cesium.Color.ORANGERED
-            }),
-            clampToGround: true,
-            fill: false,
-            outline: true,
-            outlineColor: Cesium.Color.ORANGERED,
-            outlineWidth: 2
-        }
+        ellipse: { semiMinorAxis: radiusProperty, semiMajorAxis: radiusProperty, material: new Cesium.PolylineGlowMaterialProperty({ glowPower: 0.25, color: Cesium.Color.ORANGERED }), clampToGround: true, fill: false, outline: true, outlineColor: Cesium.Color.ORANGERED, outlineWidth: 2 }
     }));
 }
 
@@ -239,18 +207,19 @@ async function runFullSimulation() {
     if (!simulationState.selectedMeteor || !simulationState.impactLocation) return;
     
     warningPanel.classList.add('hidden');
-    loadingOverlay.classList.remove('hidden');
     
-    await preloadAssets();
-    
-    loadingOverlay.classList.add('hidden');
-
+    // Animação primeiro
     await animate3DImpact(viewer, simulationState.impactLocation);
     
+    // Depois, cálculos e resultados
     resultsPanel.classList.remove('hidden');
     resultsPanel.querySelector('h2').textContent = "Calculando Impacto...";
     try {
+<<<<<<< HEAD:simulador.js
         const response = await fetch('https://meteorfall.onrender.com/api/calculate_impact', {
+=======
+        const response = await fetch('/api/calculate_impact', {
+>>>>>>> colega/main:static/simulador.js
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ size: simulationState.selectedMeteor.size, velocity: simulationState.selectedMeteor.velocity, elevation: simulationState.impactLocation.elevation })
@@ -270,13 +239,7 @@ async function runFullSimulation() {
     } catch (error) {
         console.error("Erro ao calcular impacto:", error);
         resultsPanel.querySelector('h2').textContent = "Erro na Simulação";
-        const errorP = document.createElement('p');
-        errorP.style.color = 'red';
-        errorP.style.marginTop = '1rem';
-        errorP.textContent = 'Não foi possível conectar ao servidor de cálculo. Verifique se o programa Python (app.py) está em execução.';
-        if (!resultsPanel.querySelector('p[style*="color: red"]')) {
-            resultsPanel.insertBefore(errorP, document.getElementById('reset-button'));
-        }
+        // Lógica de exibição de erro...
     }
 }
 
@@ -285,5 +248,5 @@ function resetSimulation() {
         craterEntities.forEach(e => viewer.entities.remove(e));
         craterEntities = [];
     }
-    window.location.href = 'lista.html';
+    window.location.href = '/lista';
 }

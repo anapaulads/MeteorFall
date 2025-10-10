@@ -1,4 +1,8 @@
+<<<<<<< HEAD:lista.js
 const API_URL = 'https://meteorfall.onrender.com/api/asteroids';
+=======
+const API_URL = '/api/asteroids';
+>>>>>>> colega/main:static/lista.js
 
 let allAsteroids = [];
 
@@ -21,7 +25,7 @@ function renderAsteroids(asteroidsToRender) {
             size: asteroid.size_meters,
             velocity: asteroid.velocity_km_s
         });
-        cardLink.href = `simulador.html?${params.toString()}`;
+cardLink.href = `/simulador?${params.toString()}`;
 
         cardLink.innerHTML = `
             <article class="asteroid-card ${asteroid.hazard_level.class}">

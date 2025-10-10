@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nossa Missão - MeteorFall</title>
-    <link rel="stylesheet" href="pages.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
 </head>
 <body>
 
@@ -19,11 +19,10 @@
             <img src="https://i.ibb.co/DD44gj6k/Chat-GPT-Image-4-de-out-de-2025-23-47-33.png" alt="MeteorFall Logo">
         </div>
         <nav class="main-nav">
-            <a href="index.html">Home</a>
-            <a href="projeto.html">Projeto</a>
-            <a href="missao.html">Missão</a>
-            <a href="sobre-nos.html">Sobre Nós</a>
-            <a href="historias.html">Histórias</a>
+            <a href="/">Home</a>
+            <a href="/projeto">Projeto</a>
+            <a href="/historias">Histórias</a>
+            <a href="/sobre-nos">Sobre Nós</a>
         </nav>
     </header>
 
