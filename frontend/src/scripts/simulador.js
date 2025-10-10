@@ -1,5 +1,5 @@
-Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTQ4YmU0Mi1jNjRiLTRmZTEtOGU5Mi0zOWY5YzFhZTljYTkiLCJpZCI6MzQ3MjAxLCJpYXQiOjE3NTk3MTQ5MTB9.YT6r6H1Fol-tm3ksnj1oWs-IeBf07RyOwbu3LqywhqU'; 
-const GOOGLE_API_KEY = "AIzaSyBQ4WoMTxYQOMznMsR3o9Y2w9ia9hBmRTE";
+Cesium.Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN; 
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
 let viewer;
 let simulationState = { selectedMeteor: null, impactLocation: null };
@@ -204,7 +204,8 @@ async function runFullSimulation() {
     resultsPanel.classList.remove('hidden');
     resultsPanel.querySelector('h2').textContent = "Calculando Impacto...";
     try {
-        const response = await fetch('/api/calculate_impact', {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+        const response = await fetch(`${API_BASE_URL}/api/calculate_impact`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ size: simulationState.selectedMeteor.size, velocity: simulationState.selectedMeteor.velocity, elevation: simulationState.impactLocation.elevation })
