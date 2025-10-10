@@ -1,6 +1,7 @@
 Cesium.Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN; 
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
+
 let viewer;
 let simulationState = { selectedMeteor: null, impactLocation: null };
 let impactMarkerEntity = null;
