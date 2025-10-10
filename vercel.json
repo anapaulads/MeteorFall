@@ -2,14 +2,25 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/api_test.py",
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build"
+    },
+    {
+      "src": "app.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api/test",
-      "dest": "backend/api_test.py"
+      "src": "/api/(.*)",
+      "dest": "app.py"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
