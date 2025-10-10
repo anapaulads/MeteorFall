@@ -85,19 +85,20 @@ function cancelAndReselect() {
     document.querySelector('#location-data span').textContent = 'Nenhum selecionado';
 }
 
-function initializeGooglePlaces() {
+async function initializeGooglePlaces() {
+    const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
     const searchInput = document.getElementById('location-search-input');
-    if (window.google && window.google.maps) {
-        const autocomplete = new google.maps.places.Autocomplete(searchInput);
-        autocomplete.addListener('place_changed', () => {
-            const place = autocomplete.getPlace();
-            if (place.geometry && place.geometry.location) {
-                syncUIToLocation(place.geometry.location.lat(), place.geometry.location.lng(), 1, place.formatted_address);
-            }
-        });
-    } else {
-        setTimeout(initializeGooglePlaces, 500);
-    }
+
+    const autocomplete = new PlaceAutocompleteElement({
+        inputElement: searchInput,
+    });
+
+    autocomplete.addEventListener('gmp-placeselect', (event) => {
+        const place = event.place;
+        if (place.location) {
+            syncUIToLocation(place.location.latitude, place.location.longitude, 1, place.displayName);
+        }
+    });
 }
 
 async function syncUIToLocation(lat, lon, elevation, name = null) {
