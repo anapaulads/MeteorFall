@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cenários de Impacto - MeteorFall</title>
+    <link rel="stylesheet" href="/src/styles/pages.css">
+    <link rel="stylesheet" href="/src/styles/historias.css">
+</head>
+<body>
+    <div class="meteor-container">
+        <img src="https://i.ibb.co/Kp2RKTVJ/Chat-GPT-Image-4-de-out-de-2025-23-23-45.png" alt="Meteoro caindo" class="animated-meteor meteor-1">
+        <img src="https://i.ibb.co/Kp2RKTVJ/Chat-GPT-Image-4-de-out-de-2025-23-23-45.png" alt="Meteoro caindo" class="animated-meteor meteor-2">
+        <img src="https://i.ibb.co/Kp2RKTVJ/Chat-GPT-Image-4-de-out-de-2025-23-23-45.png" alt="Meteoro caindo" class="animated-meteor meteor-3">
+    </div>
+
+    <header class="main-header">
+        <div class="logo"><img src="https://i.ibb.co/DD44gj6k/Chat-GPT-Image-4-de-out-de-2025-23-47-33.png" alt="MeteorFall Logo"></div>
+        <nav class="main-nav">
+            <a href="/">Home</a>
+            <a href="/pages/projeto.html">Projeto</a>
+            <a href="/pages/historias.html">Histórias</a>
+            <a href="/pages/sobre-nos.html">Sobre Nós</a>
+        </nav>
+    </header>
+
+    <main class="page-container">
+        <h1>Cenários de Impacto</h1>
+        
+        <div class="tabs-nav">
+            <button class="tab-link active" data-tab="cidade">Cidade Povoada</button>
+            <button class="tab-link" data-tab="rural">Área Rural</button>
+            <button class="tab-link" data-tab="oceano">Oceano</button>
+        </div>
+
+        <div class="tabs-content">
+            <div id="cidade" class="tab-panel active">
+                <div class="risk-grid">
+                    <div class="risk-card risk-leve">
+                        <h3>Risco Baixo</h3>
+                        <p>Meteoro se desintegra no ar. O perigo é apenas o estrondo sônico ensurdecedor, que quebra vidros e causa pânico. Não há cratera.</p>
+                    </div>
+                    <div class="risk-card risk-moderado">
+                        <h3>Risco Moderado</h3>
+                        <p>Aniquilação Regional. O impacto forma uma cratera, destruindo a cidade. A onda de choque causa danos maciços a centenas de quilômetros.</p>
+                    </div>
+                    <div class="risk-card risk-medio">
+                        <h3>Risco Elevado</h3>
+                        <p>Catástrofe de Extinção. O choque vaporiza a crosta e gera terremotos globais. O calor e a nuvem de detritos causam o colapso da biosfera.</p>
+                    </div>
+                    <div class="risk-card risk-alto">
+                        <h3>Risco Cataclísmico</h3>
+                        <p>Extinção Imediata. O impacto gera uma energia que pode ferver a superfície dos oceanos e tornar a Terra inabitável por séculos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="rural" class="tab-panel">
+                <div class="risk-grid">
+                    <div class="risk-card risk-leve">
+                        <h3>Risco Baixo</h3>
+                        <p>Explosão aérea que derruba todas as árvores em centenas de quilômetros quadrados. O perigo é a onda de choque e o vento.</p>
+                    </div>
+                    <div class="risk-card risk-moderado">
+                        <h3>Risco Moderado</h3>
+                        <p>Cria uma cratera de quilômetros, aniquilando a vida local. A onda de choque causa danos estruturais em vilas rurais a longa distância.</p>
+                    </div>
+                    <div class="risk-card risk-medio">
+                        <h3>Risco Elevado</h3>
+                        <p>Desastre de Extinção Planetária. O material ejetado gera incêndios globais e escuridão atmosférica por anos, extinguindo grande parte das espécies.</p>
+                    </div>
+                    <div class="risk-card risk-alto">
+                        <h3>Risco Cataclísmico</h3>
+                        <p>Devastação Geológica. O choque altera a crosta terrestre, causa super-terremotos e vaporiza a área, redefinindo a geologia do planeta.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="oceano" class="tab-panel">
+                <div class="risk-grid">
+                    <div class="risk-card risk-leve">
+                        <h3>Risco Baixo</h3>
+                        <p>O impacto na água causa uma coluna de vapor e ondas locais perigosas para embarcações. Não há risco significativo de tsunami costeiro.</p>
+                    </div>
+                    <div class="risk-card risk-moderado">
+                        <h3>Risco Moderado</h3>
+                        <p>Tsunami Regional Devastador. Gera um tsunami de grande altura que inunda e destrói comunidades costeiras próximas.</p>
+                    </div>
+                    <div class="risk-card risk-medio">
+                        <h3>Risco Elevado</h3>
+                        <p>Colapso Climático Global. Causa tsunamis transoceânicos e a vaporização de água lança material que causa um Inverno de Impacto severo.</p>
+                    </div>
+                    <div class="risk-card risk-alto">
+                        <h3>Risco Cataclísmico</h3>
+                        <p>Cataclismo Oceânico. A energia do choque vaporiza uma porção dos oceanos, desencadeando uma mudança climática permanente e drástica.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabLinks = document.querySelectorAll('.tab-link');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const tabId = link.getAttribute('data-tab');
+
+                    tabLinks.forEach(item => item.classList.remove('active'));
+                    tabPanels.forEach(panel => panel.classList.remove('active'));
+
+                    link.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>

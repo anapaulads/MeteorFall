@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Asteroides Próximos - MeteorFall</title>
+    <link rel="stylesheet" href="/src/styles/pages.css">
+    <link rel="stylesheet" href="/src/styles/estilo.css">
+</head>
+<body>
+
+    <div class="meteor-container">
+        <img src="https://i.ibb.co/Kp2RKTVJ/Chat-GPT-Image-4-de-out-de-2025-23-23-45.png" alt="Meteoro caindo" class="animated-meteor meteor-1">
+        <img src="https://i.ibb.co/Kp2RKTVJ/Chat-GPT-Image-4-de-out-de-2025-23-23-45.png" alt="Meteoro caindo" class="animated-meteor meteor-2">
+        <img src="https://i.ibb.co/Kp2RKTVJ/Chat-GPT-Image-4-de-out-de-2025-23-23-45.png" alt="Meteoro caindo" class="animated-meteor meteor-3">
+    </div>
+
+    <header class="main-header">
+        <div class="logo">
+            <img src="https://i.ibb.co/DD44gj6k/Chat-GPT-Image-4-de-out-de-2025-23-47-33.png" alt="MeteorFall Logo">
+        </div>
+        <nav class="main-nav">
+            <a href="/">Home</a>
+            <a href="/pages/projeto.html">Projeto</a>
+            <a href="/pages/historias.html">Histórias</a>
+            <a href="/pages/sobre-nos.html">Sobre Nós</a>
+        </nav>
+    </header>
+
+    <main class="page-container">
+        <h1>Asteroides Próximos da Terra</h1>
+
+        <div id="filter-container">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="Risco Baixo">Risco Baixo</button>
+            <button class="filter-btn" data-filter="Risco Moderado">Risco Moderado</button>
+            <button class="filter-btn" data-filter="Risco Elevado">Risco Elevado</button>
+            <button class="filter-btn" data-filter="Risco Cataclísmico">Risco Cataclísmico</button>
+        </div>
+
+        <div id="asteroid-list">
+            <p class="loading-message">Carregando dados da NASA...</p>
+        </div>
+    </main>
+
+    <script type="module" src="/src/scripts/lista.js"></script>
+</body>
+</html>
