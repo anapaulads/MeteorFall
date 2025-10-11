@@ -180,5 +180,6 @@ h1, h2 {
 #close-evacuation-btn:hover { background-color: #555; color: #fff; border-color: #fff; }
 
 .pac-container {
-    z-index: 9999 !important;
+    position: fixed !important; /* Força o posicionamento relativo à janela */
+    z-index: 9999 !important;   /* Garante que está na frente de tudo */
 }
