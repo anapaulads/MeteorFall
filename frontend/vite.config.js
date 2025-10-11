@@ -29,7 +29,6 @@ export default defineConfig({
         quiz: resolve(__dirname, 'pages/quiz.html'),
         simulador: resolve(__dirname, 'pages/simulador.html'),
         sobreNos: resolve(__dirname, 'pages/sobre-nos.html'),
-        testeChave: resolve(__dirname, 'pages/teste_chave.html'),
       },
     },
   },
