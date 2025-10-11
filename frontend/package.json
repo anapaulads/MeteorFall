@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-  "dev": "vite --host --port 8080",
-  "build": "vite build",
-  "preview": "vite preview",
-  "start:backend": "cd .. && py -m flask run",
-  "start": "concurrently \"npm:start:backend\" \"npm:dev\""
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start:backend": "cd .. && py -m flask run",
+    "start": "concurrently \"npm:start:backend\" \"npm:dev\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
