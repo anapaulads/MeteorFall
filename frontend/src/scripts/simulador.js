@@ -6,33 +6,45 @@ let impactMarkerEntity = null;
 let craterEntities = [];
 
 window.initializeGoogleMaps = async function() {
-    const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
-    const searchInput = document.getElementById('location-search-input');
-    
-    const autocomplete = new PlaceAutocompleteElement({
-        inputElement: searchInput,
-    });
+    console.log("SUCESSO: API do Google Maps carregada. A função de callback foi chamada!");
+    try {
+        const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
+        const searchInput = document.getElementById('location-search-input');
+        
+        if (searchInput) {
+            const autocomplete = new PlaceAutocompleteElement({
+                inputElement: searchInput,
+            });
 
-    autocomplete.addEventListener('gmp-placeselect', (event) => {
-        const place = event.place;
-        if (place.location) {
-            syncUIToLocation(place.location.latitude, place.location.longitude, 1, place.displayName);
+            autocomplete.addEventListener('gmp-placeselect', (event) => {
+                const place = event.place;
+                if (place.location) {
+                    syncUIToLocation(place.location.latitude, place.location.longitude, 1, place.displayName);
+                }
+            });
+            console.log("Autocomplete da Google ativado com sucesso!");
+        } else {
+            console.error("Erro: O elemento 'location-search-input' não foi encontrado no DOM.");
         }
-    });
+    } catch (error) {
+        console.error("Erro ao inicializar o Autocomplete da Google:", error);
+    }
 }
 
 function loadGoogleMapsApi() {
   const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
   if (!apiKey) {
-      console.error("Chave da API do Google não encontrada.");
+      console.error("ERRO CRÍTICO: Chave da API do Google não foi encontrada nas variáveis de ambiente.");
       return;
   }
+  console.log("A carregar o script da API do Google Maps com callback...");
   const script = document.createElement('script');
   script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initializeGoogleMaps`;
   script.async = true;
   script.defer = true;
   document.head.appendChild(script);
 }
+
 
 
 document.addEventListener('DOMContentLoaded', main);
