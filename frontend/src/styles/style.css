@@ -178,3 +178,7 @@ h1, h2 {
 .evacuation-body ul li::before { content: '»'; position: absolute; left: 0; color: var(--accent-color); font-weight: bold; }
 #close-evacuation-btn { display: block; margin: 2rem auto 0 auto; padding: 0.8rem 2.5rem; font-size: 1rem; font-weight: 700; border-radius: 50px; background-color: transparent; color: #aaa; border: 1px solid #aaa; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; }
 #close-evacuation-btn:hover { background-color: #555; color: #fff; border-color: #fff; }
+
+.pac-container {
+    z-index: 9999 !important;
+}
