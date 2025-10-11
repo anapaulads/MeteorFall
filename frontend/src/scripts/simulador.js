@@ -1,11 +1,39 @@
-Cesium.Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN; 
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
-
+Cesium.Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
 
 let viewer;
 let simulationState = { selectedMeteor: null, impactLocation: null };
 let impactMarkerEntity = null;
 let craterEntities = [];
+
+window.initializeGoogleMaps = async function() {
+    const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
+    const searchInput = document.getElementById('location-search-input');
+    
+    const autocomplete = new PlaceAutocompleteElement({
+        inputElement: searchInput,
+    });
+
+    autocomplete.addEventListener('gmp-placeselect', (event) => {
+        const place = event.place;
+        if (place.location) {
+            syncUIToLocation(place.location.latitude, place.location.longitude, 1, place.displayName);
+        }
+    });
+}
+
+function loadGoogleMapsApi() {
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+  if (!apiKey) {
+      console.error("Chave da API do Google não encontrada.");
+      return;
+  }
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initializeGoogleMaps`;
+  script.async = true;
+  script.defer = true;
+  document.head.appendChild(script);
+}
+
 
 document.addEventListener('DOMContentLoaded', main);
 
@@ -30,7 +58,8 @@ async function main() {
     
     updateMeteorUI();
     setupEventHandlers();
-    initializeGooglePlaces();
+    
+    loadGoogleMapsApi();
 }
 
 function updateMeteorUI() {
@@ -85,22 +114,6 @@ function cancelAndReselect() {
     document.querySelector('#location-data span').textContent = 'Nenhum selecionado';
 }
 
-async function initializeGooglePlaces() {
-    const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
-    const searchInput = document.getElementById('location-search-input');
-
-    const autocomplete = new PlaceAutocompleteElement({
-        inputElement: searchInput,
-    });
-
-    autocomplete.addEventListener('gmp-placeselect', (event) => {
-        const place = event.place;
-        if (place.location) {
-            syncUIToLocation(place.location.latitude, place.location.longitude, 1, place.displayName);
-        }
-    });
-}
-
 async function syncUIToLocation(lat, lon, elevation, name = null) {
     const locationDataEl = document.querySelector('#location-data span');
     simulationState.impactLocation = { lat, lon, elevation };
@@ -120,8 +133,9 @@ async function syncUIToLocation(lat, lon, elevation, name = null) {
 async function reverseGeocode(lat, lon) {
     const locationDataEl = document.querySelector('#location-data span');
     locationDataEl.textContent = 'Buscando local...';
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
     try {
-        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${GOOGLE_API_KEY}`);
+        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`);
         const data = await response.json();
         return data.results[0] ? data.results[0].formatted_address : `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
     } catch (e) { return `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`; }
@@ -196,6 +210,7 @@ function drawCrater(viewer, impactLocation, craterDiameterKm) {
 async function runFullSimulation() {
     const warningPanel = document.getElementById('warning-panel');
     const resultsPanel = document.getElementById('results-panel');
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
     
     if (!simulationState.selectedMeteor || !simulationState.impactLocation) return;
     
@@ -206,7 +221,6 @@ async function runFullSimulation() {
     resultsPanel.classList.remove('hidden');
     resultsPanel.querySelector('h2').textContent = "Calculando Impacto...";
     try {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
         const response = await fetch(`${API_BASE_URL}/api/calculate_impact`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
